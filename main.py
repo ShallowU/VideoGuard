@@ -444,6 +444,25 @@ def process_text():
     except Exception as e:
         return jsonify({"error": f"处理失败: {str(e)}"}), 500
 
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """健康检查端点"""
+    return jsonify({
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+    })
+
+
+# 添加错误处理
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({'error': 'Internal server error'}), 500
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Not found'}), 404
+
 """
 函数功能：设置日志系统，记录所有输出到日志文件
 @return: 日志文件路径和文件句柄
@@ -523,7 +542,7 @@ if __name__ == "__main__":
         
         # 启动Flask应用
         print("启动服务...")
-        app.run(host='0.0.0.0', port=8000, debug=False)
+        app.run(host='0.0.0.0', port=8000, debug=False, threaded=True)
     except KeyboardInterrupt:
         print("服务已停止")
     finally:

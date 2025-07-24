@@ -1,0 +1,105 @@
+git clone https://github.com/ShallowU/VideoGuard.git
+cd VideoGuard/
+
+# 查看云容器公网IP
+curl ifconfig.me
+
+sudo apt update
+sudo apt install ffmpeg -y
+
+pip install -r requirements.txt
+
+# 验证CUDA可用性
+python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+python -c "import torch; print(f'GPU count: {torch.cuda.device_count()}')"
+
+
+# 检查端口8000是否被占用
+netstat -tlnp | grep :8000
+
+# Ubuntu防火墙设置
+sudo ufw allow 8000
+sudo ufw reload
+
+# systemd服务 video.service
+```
+[Unit]
+Description=VideoGuard AI Video Content Detection Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/VideoGuard
+Environment=PATH=/root/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/root/miniconda3/bin/python main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+
+
+
+# 创建systemd服务文件
+sudo nano /etc/systemd/system/videoguard.service
+
+
+[Unit]
+Description=VideoGuard AI Video Content Detection Service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/VideoGuard
+Environment=PATH=/home/ubuntu/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=CONDA_DEFAULT_ENV=base
+Environment=CONDA_PREFIX=/home/ubuntu/miniconda3
+ExecStart=/home/ubuntu/miniconda3/bin/python main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
+
+# 重载systemd配置
+sudo systemctl daemon-reload
+
+# 启动服务
+sudo systemctl start videoguard
+
+# 设置开机自启
+sudo systemctl enable videoguard
+
+# 查看服务状态
+sudo systemctl status videoguard
+
+
+# 查看云容器公网IP
+curl ifconfig.me
+
+# 本地测试
+curl http://localhost:8000/health
+
+# 公网测试
+curl http://your-public-ip:8000/health
+
+# 安装GPU监控工具
+pip install gpustat
+
+# 监控GPU使用情况
+watch -n 1 gpustat
+
+# 停止服务
+sudo systemctl stop videoguard
+
+# 重启服务
+sudo systemctl restart videoguard
