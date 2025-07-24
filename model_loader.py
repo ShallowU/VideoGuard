@@ -51,13 +51,18 @@ class ModelLoader:
         sys.stdout = open(os.devnull, 'w')
         sys.stderr = open(os.devnull, 'w')
         
+        # self.asr_model = AutoModel(
+        #     model="/home/violet/.cache/modelscope/hub/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+        #     vad_model="/home/violet/.cache/modelscope/hub/models/iic/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+        #     punc_model="/home/violet/.cache/modelscope/hub/models/iic/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+        #     disable_update=True
+        # )
         self.asr_model = AutoModel(
-            model="/home/violet/.cache/modelscope/hub/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
-            vad_model="/home/violet/.cache/modelscope/hub/models/iic/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-            punc_model="/home/violet/.cache/modelscope/hub/models/iic/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-            disable_update=True
+            model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+            vad_model="iic/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+            punc_model="iic/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+            disable_update=True,
         )
-        
         sys.stdout = original_stdout
         sys.stderr = original_stderr
 
@@ -65,12 +70,13 @@ class ModelLoader:
         """加载OCR模型（保持原始参数）"""
         self.ocr_model = PaddleOCR(
             use_gpu=True,
-            det_batch_num= 8  ,   # 4096,
-            rec_batch_num=8,# 4096,
+            det_batch_num= 64  ,   # 4096,
+            rec_batch_num=128,# 4096,
             lang='ch',
             use_angle_cls=False,
             det_db_thresh=0.3,
-            rec_thresh=0.5
+            rec_thresh=0.5,
+            precision='fp16',
         )
 
     def _load_violence_model(self):

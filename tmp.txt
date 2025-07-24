@@ -1,0 +1,126 @@
+# VideoGuard智星云部署流程 (Root用户 + Anaconda环境)
+
+# 1. 克隆项目
+git clone https://github.com/ShallowU/VideoGuard.git
+cd VideoGuard/
+
+# 2. 查看环境信息
+echo "公网IP: $(curl -s ifconfig.me)"
+echo "当前用户: $(whoami)"
+echo "Python路径: $(which python)"
+echo "Anaconda路径: /root/anaconda3"
+
+# 3. 检查GPU硬件
+echo "=== GPU硬件检查 ==="
+lspci | grep -i nvidia
+
+# 4. 安装NVIDIA驱动和CUDA工具包
+echo "=== 安装NVIDIA驱动和CUDA ==="
+sudo apt update
+sudo apt install -y ubuntu-drivers-common
+sudo ubuntu-drivers autoinstall
+
+# 3. 安装系统依赖
+sudo apt update
+sudo apt install ffmpeg -y
+
+# 4. 安装Python依赖 (使用anaconda环境)
+pip install -r requirements.txt
+
+# 5. 验证GPU环境
+python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+python -c "import torch; print(f'GPU count: {torch.cuda.device_count()}')"
+
+# 6. 关闭防火墙
+sudo ufw disable
+sudo systemctl stop iptables 2>/dev/null || true
+sudo systemctl stop firewalld 2>/dev/null || true
+
+# 7. 修改main.py使用内网端口8800
+sed -i 's/port=8000/port=8800/g' main.py
+sed -i 's/host=.*,/host="0.0.0.0",/g' main.py
+
+# 8. 添加健康检查端点到main.py (如果没有)
+cat >> main.py << 'EOF'
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """健康检查端点"""
+    import torch
+    from datetime import datetime
+    return jsonify({
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "gpu_available": torch.cuda.is_available(),
+        "gpu_count": torch.cuda.device_count() if torch.cuda.is_available() else 0
+    })
+EOF
+
+# 9. 创建systemd服务文件
+sudo tee /etc/systemd/system/videoguard.service > /dev/null << 'EOF'
+[Unit]
+Description=VideoGuard AI Video Content Detection Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/VideoGuard
+Environment=PATH=/root/anaconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=CONDA_DEFAULT_ENV=base
+Environment=CONDA_PREFIX=/root/anaconda3
+ExecStart=/root/anaconda3/bin/python main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 10. 启动服务
+sudo systemctl daemon-reload
+sudo systemctl enable videoguard
+sudo systemctl start videoguard
+
+# 11. 检查服务状态
+sudo systemctl status videoguard
+
+# 12. 验证端口监听 (必须确保监听0.0.0.0:8800)
+echo "检查端口监听状态:"
+netstat -nlpt | grep 8800
+
+# 13. 本地测试
+echo "本地健康检查测试:"
+curl http://localhost:8800/health
+
+# 14. 显示访问信息
+echo "========================="
+echo "部署完成！访问信息:"
+echo "内网地址: http://localhost:8800"
+echo "外网地址: http://223.109.239.18:28576"
+echo "健康检查: http://223.109.239.18:28576/health"
+echo "API调用: http://223.109.239.18:28576/process"
+echo "========================="
+
+
+
+
+
+# 执行到重启前的步骤
+sudo apt update
+sudo apt install -y ubuntu-drivers-common
+sudo ubuntu-drivers autoinstall
+
+# 安装CUDA工具包
+wget https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_530.30.02_linux.run
+sudo sh cuda_12.1.0_530.30.02_linux.run --silent --toolkit
+
+# 设置环境变量
+echo 'export CUDA_HOME=/usr/local/cuda-12.1' >> ~/.bashrc
+echo 'export PATH=$CUDA_HOME/bin:$PATH' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
+
+# 重启系统
+sudo reboot

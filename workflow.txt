@@ -1,25 +1,47 @@
 git clone https://github.com/ShallowU/VideoGuard.git
 cd VideoGuard/
 
-# 查看云容器公网IP
-curl ifconfig.me
+# 2. 查看环境信息
+echo "公网IP: $(curl -s ifconfig.me)"
+echo "当前用户: $(whoami)"
+echo "Python路径: $(which python)"
+
+nvidia-smi
+nvcc -v
+# 验证CUDA可用性
+python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+python -c "import torch; print(f'GPU count: {torch.cuda.device_count()}')"
+
+# 3. 检查GPU硬件
+echo "=== GPU硬件检查 ==="
+lspci | grep -i nvidia
+
+# 4. 安装NVIDIA驱动和CUDA工具包
+echo "=== 安装NVIDIA驱动和CUDA ==="
+sudo apt update
+sudo apt install -y ubuntu-drivers-common
+sudo ubuntu-drivers autoinstall
+
+
 
 sudo apt update
 sudo apt install ffmpeg -y
 
 pip install -r requirements.txt
 
-# 验证CUDA可用性
-python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
-python -c "import torch; print(f'GPU count: {torch.cuda.device_count()}')"
+funasr==1.2.6
 
 
 # 检查端口8000是否被占用
-netstat -tlnp | grep :8000
+netstat -tlnp | grep :8800
 
 # Ubuntu防火墙设置
-sudo ufw allow 8000
+sudo ufw allow 8800
 sudo ufw reload
+
+sudo ufw disable
+sudo systemctl stop iptables 2>/dev/null || true
+sudo systemctl stop firewalld 2>/dev/null || true
 
 # systemd服务 video.service
 ```
