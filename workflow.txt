@@ -6,64 +6,46 @@ echo "公网IP: $(curl -s ifconfig.me)"
 echo "当前用户: $(whoami)"
 echo "Python路径: $(which python)"
 
+# 查看云容器公网IP
+curl ifconfig.me
+# 切到anaconda环境中
+
+# 测试
 nvidia-smi
 nvcc -v
 # 验证CUDA可用性
 python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
 python -c "import torch; print(f'GPU count: {torch.cuda.device_count()}')"
 
-# 3. 检查GPU硬件
-echo "=== GPU硬件检查 ==="
-lspci | grep -i nvidia
-
-# 4. 安装NVIDIA驱动和CUDA工具包
-echo "=== 安装NVIDIA驱动和CUDA ==="
-sudo apt update
-sudo apt install -y ubuntu-drivers-common
-sudo ubuntu-drivers autoinstall
-
-
-
+# 3.安装ffmpeg
 sudo apt update
 sudo apt install ffmpeg -y
+# 检查FFmpeg是否支持CUDA
+ffmpeg -encoders | grep nvenc
+ffmpeg -hwaccels
 
+# 安装python环境
 pip install -r requirements.txt
+pip install funasr==1.2.6
+# 安装GPU监控工具
+pip install gpustat
 
-funasr==1.2.6
+# 监控GPU使用情况
+watch -n 1 gpustat
 
 
-# 检查端口8000是否被占用
-netstat -tlnp | grep :8800
+# 改动main.py的8000端口
 
-# Ubuntu防火墙设置
+
+# 检查端口使用情况
+netstat -tlnp 
+
+# Ubuntu防火墙设置（选做）
 sudo ufw allow 8800
 sudo ufw reload
-
 sudo ufw disable
 sudo systemctl stop iptables 2>/dev/null || true
 sudo systemctl stop firewalld 2>/dev/null || true
-
-# systemd服务 video.service
-```
-[Unit]
-Description=VideoGuard AI Video Content Detection Service
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/root/VideoGuard
-Environment=PATH=/root/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=/root/miniconda3/bin/python main.py
-Restart=always
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
-```
-
 
 
 
@@ -77,12 +59,12 @@ After=network.target
 
 [Service]
 Type=simple
-User=ubuntu
-WorkingDirectory=/home/ubuntu/VideoGuard
-Environment=PATH=/home/ubuntu/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+User=vipuser
+WorkingDirectory=/home/vipuser/VideoGuard
+Environment=PATH=/home/vipuser/anaconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 Environment=CONDA_DEFAULT_ENV=base
-Environment=CONDA_PREFIX=/home/ubuntu/miniconda3
-ExecStart=/home/ubuntu/miniconda3/bin/python main.py
+Environment=CONDA_PREFIX=/home/vipuser/anaconda3
+ExecStart=/home/vipuser/anaconda3/bin/python main.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -94,34 +76,29 @@ WantedBy=multi-user.target
 
 # 重载systemd配置
 sudo systemctl daemon-reload
-
 # 启动服务
 sudo systemctl start videoguard
-
 # 设置开机自启
 sudo systemctl enable videoguard
-
 # 查看服务状态
 sudo systemctl status videoguard
-
-
-# 查看云容器公网IP
-curl ifconfig.me
-
-# 本地测试
-curl http://localhost:8000/health
-
-# 公网测试
-curl http://your-public-ip:8000/health
-
-# 安装GPU监控工具
-pip install gpustat
-
-# 监控GPU使用情况
-watch -n 1 gpustat
-
 # 停止服务
 sudo systemctl stop videoguard
-
 # 重启服务
 sudo systemctl restart videoguard
+
+
+# 本地测试
+curl http://localhost:8800/health
+
+# 公网测试
+curl http://223.109.239.11:/health
+
+
+
+Every 1.0s: gpustat                                                                                                             ubuntu20: Thu Jul 24 09:52:15 2025
+
+ubuntu20                    Thu Jul 24 09:52:15 2025  535.129.03
+[0] NVIDIA GeForce RTX 3090 | 41°C,   0 % |  1651 / 24576 MB | root(1634M) gdm(4M)
+
+2279

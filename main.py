@@ -21,10 +21,11 @@ CORS(app)
 # 配置常量
 CONFIG = {
     'FRAME_RATE': 8,                # 视频处理帧率
-    'BATCH_SIZE': 32,               # 图像处理批量大小  
+    'BATCH_SIZE': 32,                # 图像处理批量大小  
     'MAX_VIOLATION_IMAGES': 5,      # 最大违规图片展示数量
-    'ASR_BATCH_SIZE': 512,          # ASR语音识别批量大小，初始300
-    'HOTWORD': '魔搭'                # ASR语音识别热词
+    'ASR_BATCH_SIZE': 300,          # ASR语音识别批量大小，初始300
+    'HOTWORD': '魔搭',               # ASR语音识别热词
+    'NUM_WORKERS': 4                # 数据加载器工作进程数
 }
 
 # 全局模型加载器
@@ -542,7 +543,7 @@ if __name__ == "__main__":
         
         # 启动Flask应用
         print("启动服务...")
-        app.run(host='0.0.0.0', port=8800, debug=False, threaded=True)
+        app.run(host='0.0.0.0', port=8000, debug=False, threaded=True)
     except KeyboardInterrupt:
         print("服务已停止")
     finally:

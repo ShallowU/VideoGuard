@@ -13,7 +13,15 @@ from torchvision import transforms
 from collections import deque
 from difflib import SequenceMatcher
 from util import  deepseek_text
-
+# 配置常量
+CONFIG = {
+    'FRAME_RATE': 8,                # 视频处理帧率
+    'BATCH_SIZE': 32,                # 图像处理批量大小  
+    'MAX_VIOLATION_IMAGES': 5,      # 最大违规图片展示数量
+    'ASR_BATCH_SIZE': 300,          # ASR语音识别批量大小，初始300
+    'HOTWORD': '魔搭',               # ASR语音识别热词
+    'NUM_WORKERS': 4                # 数据加载器工作进程数
+}
 """
 视频处理类，负责视频帧提取、OCR、音频处理、暴力检测等功能
 """
@@ -58,16 +66,76 @@ class VideoProcessor:
             print("警告：部分模型未预加载，正在加载缺失的模型...")
             self.ml.load_all_models()
 
+    # def extract_frames(self):
+    #     """使用CUDA加速的FFmpeg提取视频帧"""
+    #     start_time = time.time()
+    #     if os.path.exists(self.image_folder):
+    #         os.system(f"rm -rf {self.image_folder}")
+    #     os.makedirs(self.image_folder, exist_ok=True)
+        
+    #     # 使用CUDA硬件解码和缩放
+    #     cmd = f"ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i {self.video_path} -vf 'fps={self.frame_rate},scale_cuda=224:224:format=nv12,hwdownload,format=nv12,format=rgb24' -f image2 {self.image_folder}/%05d.png -loglevel error"
+    #     os.system(cmd)
+    #     print(f"该视频帧已提取至: {self.image_folder}, 用时: {time.time() - start_time:.2f}秒")
+
+    # def extract_audio(self):
+    #     """使用CUDA加速的音频提取"""
+    #     start_time = time.time()
+    #     # 使用CUDA硬件解码
+    #     cmd = f"ffmpeg -hwaccel cuda -y -i {self.video_path} -vn -acodec pcm_s16le -ar 16000 -ac 1 {self.audio_file} -loglevel error"
+    #     os.system(cmd)
+    #     print(f"音频已提取至: {self.audio_file}, 用时: {time.time() - start_time:.2f}秒")
+
     def extract_frames(self):
-        """使用FFmpeg提取视频帧（保持原始实现）"""
+        """使用兼容的CUDA加速FFmpeg提取视频帧"""
         start_time = time.time()
         if os.path.exists(self.image_folder):
             os.system(f"rm -rf {self.image_folder}")
         os.makedirs(self.image_folder, exist_ok=True)
         
-        cmd = f"ffmpeg -i {self.video_path} -vf fps={self.frame_rate} {self.image_folder}/%05d.png -loglevel error"
-        os.system(cmd)
-        print(f"该视频帧已提取至: {self.image_folder}, 用时: {time.time() - start_time:.2f}秒")
+        # 首先尝试CUDA硬件解码（不使用scale_cuda）
+        cuda_cmd = f"ffmpeg -hwaccel cuda -i '{self.video_path}' -vf 'fps={self.frame_rate},scale=224:224' -f image2 '{self.image_folder}/%05d.png' -loglevel error"
+        
+        print("使用CUDA硬件解码提取视频帧...")
+        exit_code = os.system(cuda_cmd)
+        
+        if exit_code == 0:
+            print(f"CUDA硬件解码帧提取完成: {self.image_folder}, 用时: {time.time() - start_time:.2f}秒")
+        else:
+            print("CUDA硬件解码失败，回退到CPU模式...")
+            # CPU回退模式
+            cpu_cmd = f"ffmpeg -i '{self.video_path}' -vf 'fps={self.frame_rate},scale=224:224' -f image2 '{self.image_folder}/%05d.png' -loglevel error"
+            os.system(cpu_cmd)
+            print(f"CPU模式帧提取完成: {self.image_folder}, 用时: {time.time() - start_time:.2f}秒")
+
+    def extract_audio(self):
+        """使用兼容的CUDA加速音频提取"""
+        start_time = time.time()
+        
+        # 使用CUDA硬件解码音频
+        cuda_cmd = f"ffmpeg -hwaccel cuda -y -i '{self.video_path}' -vn -acodec pcm_s16le -ar 16000 -ac 1 '{self.audio_file}' -loglevel error"
+        
+        print("使用CUDA硬件解码提取音频...")
+        exit_code = os.system(cuda_cmd)
+        
+        if exit_code == 0:
+            print(f"CUDA硬件解码音频提取完成: {self.audio_file}, 用时: {time.time() - start_time:.2f}秒")
+        else:
+            print("CUDA音频解码失败，回退到CPU模式...")
+            # CPU回退模式
+            cpu_cmd = f"ffmpeg -y -i '{self.video_path}' -vn -acodec pcm_s16le -ar 16000 -ac 1 '{self.audio_file}' -loglevel error"
+            os.system(cpu_cmd)
+            print(f"CPU模式音频提取完成: {self.audio_file}, 用时: {time.time() - start_time:.2f}秒")
+    # def extract_frames(self):
+    #     """使用FFmpeg提取视频帧（保持原始实现）"""
+    #     start_time = time.time()
+    #     if os.path.exists(self.image_folder):
+    #         os.system(f"rm -rf {self.image_folder}")
+    #     os.makedirs(self.image_folder, exist_ok=True)
+        
+    #     cmd = f"ffmpeg -i {self.video_path} -vf fps={self.frame_rate} {self.image_folder}/%05d.png -loglevel error"
+    #     os.system(cmd)
+    #     print(f"该视频帧已提取至: {self.image_folder}, 用时: {time.time() - start_time:.2f}秒")
     
     def extract_text_from_image(self):
         """OCR文字提取（保持原始逻辑）"""
@@ -105,12 +173,12 @@ class VideoProcessor:
                     texts.append(item[0])
         return texts
 
-    def extract_audio(self):
-        """音频提取（保持原始FFmpeg命令）"""
-        start_time = time.time()
-        cmd = f"ffmpeg -y -i {self.video_path} -vn -acodec pcm_s16le -ar 16000 -ac 1 {self.audio_file} -loglevel error"
-        os.system(cmd)
-        print(f"音频已提取至: {self.audio_file}, 用时: {time.time() - start_time:.2f}秒")
+    # def extract_audio(self):
+    #     """音频提取（保持原始FFmpeg命令）"""
+    #     start_time = time.time()
+    #     cmd = f"ffmpeg -y -i {self.video_path} -vn -acodec pcm_s16le -ar 16000 -ac 1 {self.audio_file} -loglevel error"
+    #     os.system(cmd)
+    #     print(f"音频已提取至: {self.audio_file}, 用时: {time.time() - start_time:.2f}秒")
 
     def _process_batch(self, image_batch: List[Image.Image], batch_paths=None):
         """批量处理（使用真实帧序列进行暴力检测）"""
@@ -273,7 +341,14 @@ class VideoProcessor:
                 image_batch = [Image.open(p).convert("RGB") for p in batch_paths]
                 # 将帧路径传递给处理函数
                 resnet_probs, violence_probs = self._process_batch(image_batch, batch_paths=batch_paths)
-                
+                # from concurrent.futures import ThreadPoolExecutor
+                # with ThreadPoolExecutor(max_workers=CONFIG.get('NUM_WORKERS', 4)) as executor:
+                #     image_batch = list(executor.map(
+                #         lambda p: Image.open(p).convert("RGB"), 
+                #         batch_paths
+                #     ))
+                # resnet_probs, violence_probs = self._process_batch(image_batch, batch_paths=batch_paths)
+
                 for idx, path in enumerate(batch_paths):
                     class_id = np.argmax(resnet_probs[idx])
                     results.append({

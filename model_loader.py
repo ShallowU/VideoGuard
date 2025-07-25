@@ -8,6 +8,11 @@ from paddleocr import PaddleOCR
 import sys
 import os
 
+# PyTorch性能优化设置
+# torch.backends.cudnn.benchmark = True      # 图像尺寸固定(224x224)，这个很有效
+# torch.backends.cudnn.deterministic = False # 生产环境，追求速度而非完全可重现性
+# os.environ['CUDA_LAUNCH_BLOCKING'] = '0'   # 异步执行，提高并发性能
+
 logging.getLogger('ppocr').setLevel(logging.ERROR)
 
 """
@@ -70,8 +75,8 @@ class ModelLoader:
         """加载OCR模型（保持原始参数）"""
         self.ocr_model = PaddleOCR(
             use_gpu=True,
-            det_batch_num= 64  ,   # 4096,
-            rec_batch_num=128,# 4096,
+            det_batch_num=8 ,# 256,
+            rec_batch_num=8 ,# 512,      
             lang='ch',
             use_angle_cls=False,
             det_db_thresh=0.3,

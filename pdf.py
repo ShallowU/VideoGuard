@@ -289,7 +289,7 @@ class VideoReportGenerator:
         current_date = datetime.now()
         report_number = f"VG-{current_date.strftime('%Y%m%d')}-{current_date.strftime('%H%M%S')}"
         info_text = [
-            ("生成机构：", "VideoGuard:基于大模型与多模态融合的短视频平台有害内容检测系统"),
+            ("生成机构：", "VideoGuard:基于大模型的短视频有害内容检测与预警系统"),
             ("生成日期：", current_date.strftime('%Y年%m月%d日')),
             ("报告编号：", report_number)
         ]
@@ -357,7 +357,7 @@ class VideoReportGenerator:
             },
             'video_duration': {
                 'name': 'Video Duration',
-                'format': lambda x: f"{x:.2f} seconds" if x else f"{self.tech_data.get('frame_count', 95) / 30:.2f} seconds (estimated)",
+                'format': lambda x: f"{x:.2f} seconds" if x else f"{self.tech_data.get('frame_count', 95) / 15:.2f} seconds (estimated)",
                 'description': 'Playback duration of the video file'
             },
             'audio_info': {
@@ -372,7 +372,7 @@ class VideoReportGenerator:
             },
             'detection_accuracy': {
                 'name': 'Detection Accuracy',
-                'format': lambda x: f"{x}%" if x else '≥95% (system standard)',
+                'format': lambda x: f"{x}%" if x else '≥90.2% (system average standard)',
                 'description': 'Accuracy rate of content security detection algorithm'
             },
             'processing_time': {
@@ -885,11 +885,11 @@ class VideoReportGenerator:
                                     styles['AcademicBody']
                                 ))
                         
-                        if not in_target_section:
-                            violation_elements.append(Paragraph(
-                                f"未找到{self.maxclass}类别的检测结果。",
-                                styles['AcademicBody']
-                            ))
+                        # if not in_target_section:
+                        #     violation_elements.append(Paragraph(
+                        #         f"未找到{self.maxclass}类别的检测结果。",
+                        #         styles['AcademicBody']
+                        #     ))
                     else:
                         violation_elements.append(Paragraph(
                             "未指定maxclass参数，无法显示特定类别的检测结果。",
