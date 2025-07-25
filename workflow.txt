@@ -33,8 +33,12 @@ pip install gpustat
 # 监控GPU使用情况
 watch -n 1 gpustat
 
+# 测试外网访问
+python -m http.server 8800
+# 外网：
 
-# 改动main.py的8000端口
+
+# 改动main.py的8800端口
 
 
 # 检查端口使用情况
