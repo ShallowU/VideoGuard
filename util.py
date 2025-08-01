@@ -25,7 +25,7 @@ def videoclass2json(maxclass, secondclass):
     return result_json
 
 """
-函数功能：使用DeepSeek API检测文本违规
+函数功能：使用DeepSeek 检测文本违规
 @param texts: 要检测的文本内容
 @return: 返回违规类别和违规文本的JSON格式字符串
 """

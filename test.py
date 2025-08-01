@@ -1,7 +1,7 @@
 import requests
 import time
 url = "http://127.0.0.1:8000/process"
-files = {"video": open("test-video/normal-littlechild.mp4", "rb")}
+files = {"video": open("dataset-test/normal/news.mp4", "rb")}
 print("time now:", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 t0 = time.time()
 response = requests.post(url, files=files)

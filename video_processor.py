@@ -26,7 +26,7 @@ CONFIG = {
 视频处理类，负责视频帧提取、OCR、音频处理、暴力检测等功能
 """
 class VideoProcessor:
-    def __init__(self, video_path: str, model_loader, frame_rate: int = 10, batch_size: int = 32):
+    def __init__(self, video_path: str, model_loader, frame_rate: int = 4, batch_size: int = 32):
         self.video_path = video_path
         self.frame_rate = frame_rate
         self.batch_size = batch_size

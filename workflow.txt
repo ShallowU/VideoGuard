@@ -63,7 +63,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=vipuser
+User=root
 WorkingDirectory=/home/vipuser/VideoGuard
 Environment=PATH=/home/vipuser/anaconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 Environment=CONDA_DEFAULT_ENV=base
@@ -99,10 +99,47 @@ curl http://localhost:8800/health
 curl http://223.109.239.11:/health
 
 
+VideoGuardFrontend.service
+[Unit]
+Description=Serve Application
+After=network.target
 
-Every 1.0s: gpustat                                                                                                             ubuntu20: Thu Jul 24 09:52:15 2025
+[Service]
+Type=simple
+User=vipuser
+WorkingDirectory=/home/vipuser/VideoGuardFrontend
+ExecStart=/usr/local/bin/serve build -p 8801
+Restart=always
+RestartSec=10
 
-ubuntu20                    Thu Jul 24 09:52:15 2025  535.129.03
-[0] NVIDIA GeForce RTX 3090 | 41°C,   0 % |  1651 / 24576 MB | root(1634M) gdm(4M)
+[Install]
+WantedBy=multi-user.target
 
-2279
+
+
+
+
+
+
+
+
+videoguard.service
+[Unit]
+Description=VideoGuard AI Video Content Detection Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/vipuser/VideoGuard
+Environment=PATH=/home/vipuser/anaconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=CONDA_DEFAULT_ENV=base
+Environment=CONDA_PREFIX=/home/vipuser/anaconda3
+ExecStart=/home/vipuser/anaconda3/bin/python main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -4,3 +4,4 @@ log/
 dataset-test/
 tmp_test/
 __pycache__/
+test.py

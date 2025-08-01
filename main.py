@@ -18,9 +18,14 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+fps={
+    'small': 8,    # 小帧率
+    'medium': 16,  # 中帧率
+    'large': 24,   # 大帧率
+}
 # 配置常量
 CONFIG = {
-    'FRAME_RATE': 8,                # 视频处理帧率
+    'FRAME_RATE': 4,                # 视频处理帧率
     'BATCH_SIZE': 32,                # 图像处理批量大小  
     'MAX_VIOLATION_IMAGES': 5,      # 最大违规图片展示数量
     'ASR_BATCH_SIZE': 300,          # ASR语音识别批量大小，初始300
@@ -170,6 +175,28 @@ def generate_pdf_report(video_path, maxclass=None, violation_images=None):
     return None
 
 """
+函数功能：根据视频文件大小自动选择帧率
+@param video_path: 视频文件路径
+@return: 适合视频大小的帧率
+"""
+def get_adaptive_frame_rate(video_path):
+    """根据视频文件大小自动选择帧率"""
+    try:
+        file_size_mb = os.path.getsize(video_path) / (1024 * 1024)  # 转换为MB
+
+        if file_size_mb < 8:            # 小于8  MB
+            return fps['small']         # 8 fps
+        elif file_size_mb < 16:         # 8-16MB
+            return fps['medium']        # 16 fps
+        else:                           # 大于16MB
+            return fps['large']         # 24 fps
+            
+    except Exception as e:
+        print(f"获取视频大小失败: {e}")
+        return CONFIG['FRAME_RATE']     # 回退到默认值4
+
+
+"""
 函数功能：视频处理的通用逻辑
 @param video_path: 视频文件路径
 @return: 处理结果字典，包含音频、图像文字处理结果和视频
@@ -180,7 +207,7 @@ def process_video_common(video_path):
         processor = VideoProcessor(
             video_path=video_path,
             model_loader=ml,
-            frame_rate=CONFIG['FRAME_RATE'],
+            frame_rate=4,
             batch_size=CONFIG['BATCH_SIZE']
         )
         
