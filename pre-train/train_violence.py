@@ -45,10 +45,10 @@ writer = SummaryWriter(f'{experiment_dir}/tensorboard_logs')
 
 # Transformations
 data_transforms = transforms.Compose([
-    transforms.ToPILImage(),
-    transforms.Resize((img_height, img_width)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    transforms.ToPILImage(),                                            # 转换为PIL图像
+    transforms.Resize((img_height, img_width)),                         # 调整大小
+    transforms.ToTensor(),                                              # 转换为Tensor
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # 标准化
 ])
 
 

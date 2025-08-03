@@ -25,8 +25,7 @@ fps={
 }
 # 配置常量
 CONFIG = {
-    'FRAME_RATE': 4,                # 视频处理帧率
-    'BATCH_SIZE': 32,                # 图像处理批量大小  
+    'BATCH_SIZE': 32,               # 图像处理批量大小  
     'MAX_VIOLATION_IMAGES': 5,      # 最大违规图片展示数量
     'ASR_BATCH_SIZE': 300,          # ASR语音识别批量大小，初始300
     'HOTWORD': '魔搭',               # ASR语音识别热词
@@ -308,6 +307,34 @@ def process_video_url():
         
         # 处理视频
         result = process_video_common(video_path)
+        
+        # 检查是否为B站视频且检测结果为色情内容
+        if (video_url.startswith("https://www.bilibili.com/") and 
+            result.get("video_main_category", {}).get("name", "").lower() == "porn"):
+            
+            print("检测到B站色情视频，开始自动举报...")
+            
+            try:
+                # 导入举报模块并执行举报
+                from reporter import BilibiliReporter
+                
+                reporter = BilibiliReporter()
+                report_result = reporter.report_bilibili_video(video_url)
+                
+                # 将举报结果添加到返回结果中
+                result["report_result"] = report_result
+                
+                if report_result["success"]:
+                    print(f"自动举报成功: BV{report_result['bv']} (AV{report_result['aid']})")
+                else:
+                    print(f"自动举报失败: {report_result['message']}")
+                    
+            except Exception as e:
+                print(f"自动举报过程出错: {str(e)}")
+                result["report_result"] = {
+                    "success": False,
+                    "message": f"举报模块错误: {str(e)}"
+                }
         
         print("处理结果已整理")
         return jsonify(result)

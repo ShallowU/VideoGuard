@@ -1,6 +1,3 @@
-from PIL import ImageFile
-ImageFile.LOAD_TRUNCATED_IMAGES = True  # 允许加载截断的图片
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -18,7 +15,8 @@ import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
 import seaborn as sns
 import logging
-
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True  # 允许加载截断的图片
 # 设置日志记录
 def setup_logging():
     log_dir = 'logs'
@@ -161,14 +159,15 @@ class TrainingHistory:
         plt.savefig(f'results/confusion_matrix_{timestamp}.png', dpi=300, bbox_inches='tight')
         plt.show()
 
-# 数据增强和预处理
+
+# 使用torchvision.transforms进行数据增强和预处理
 data_transforms = {
     'train': transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(20),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.RandomResizedCrop(224),                                   # 随机裁剪到224x224
+        transforms.RandomHorizontalFlip(),                                   # 随机水平翻转
+        transforms.RandomRotation(20),                                       # 随机旋转
+        transforms.ToTensor(),                                               # 转换为Tensor
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])   # 标准化
     ]),
     'test': transforms.Compose([
         transforms.Resize(256),

@@ -53,30 +53,6 @@ sudo systemctl stop firewalld 2>/dev/null || true
 
 
 
-# 创建systemd服务文件
-sudo nano /etc/systemd/system/videoguard.service
-
-
-[Unit]
-Description=VideoGuard AI Video Content Detection Service
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/home/vipuser/VideoGuard
-Environment=PATH=/home/vipuser/anaconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-Environment=CONDA_DEFAULT_ENV=base
-Environment=CONDA_PREFIX=/home/vipuser/anaconda3
-ExecStart=/home/vipuser/anaconda3/bin/python main.py
-Restart=always
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
-
 
 # 重载systemd配置
 sudo systemctl daemon-reload
@@ -99,7 +75,8 @@ curl http://localhost:8800/health
 curl http://223.109.239.11:/health
 
 
-VideoGuardFrontend.service
+sudo vim /etc/systemd/system/VideoGuardFrontend.service
+
 [Unit]
 Description=Serve Application
 After=network.target
@@ -117,13 +94,7 @@ WantedBy=multi-user.target
 
 
 
-
-
-
-
-
-
-videoguard.service
+sudo vim /etc/systemd/system/videoguard.service
 [Unit]
 Description=VideoGuard AI Video Content Detection Service
 After=network.target
@@ -143,3 +114,21 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
+# 前端配置
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm install 22.15.1
+nvm use 22.15.1
+nvm alias default 22.15.1
+npm install -g npm@11.4.0
+node -v
+npm -v
+
+# 安装依赖
+npm install
+# 如果有serve工具，先全局安装
+npm install -g serve
+# 或者构建生产版本
+npm run build
+# 然后服务构建后的文件
+serve -s build -p 8081
