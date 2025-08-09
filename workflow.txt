@@ -38,7 +38,7 @@ python -m http.server 8800
 # 外网：
 
 
-# 改动main.py的8800端口
+# 改动main.py的8800端口和前端api端口
 
 
 # 检查端口使用情况
@@ -114,6 +114,9 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
+
+# 下载github仓库
+git clone https://github.com/Kcollision/VideoGuardFrontend.git
 # 前端配置
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 source ~/.bashrc
@@ -131,4 +134,106 @@ npm install -g serve
 # 或者构建生产版本
 npm run build
 # 然后服务构建后的文件
-serve -s build -p 8081
+serve -s build -p 8801
+
+## 配置域名
+sudo apt install nginx -y
+
+sudo vim /etc/nginx/sites-available/videoguard.tech
+
+server {
+    listen 80;
+    server_name videoguard.tech www.videoguard.tech;
+    
+    # 前端React应用
+    location / {
+        proxy_pass http://127.0.0.1:8801;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # 支持大文件上传
+        client_max_body_size 100M;
+        proxy_connect_timeout 300;
+        proxy_send_timeout 300;
+        proxy_read_timeout 300;
+    }
+    
+    # 后端API接口
+    location /api/ {
+        proxy_pass http://127.0.0.1:8800/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # AI处理需要更长时间
+        client_max_body_size 100M;
+        proxy_connect_timeout 600;
+        proxy_send_timeout 600;
+        proxy_read_timeout 600;
+    }
+    
+    # 健康检查接口
+    location /health {
+        proxy_pass http://127.0.0.1:8800/health;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+# 创建软链接启用站点
+sudo ln -s /etc/nginx/sites-available/videoguard.tech /etc/nginx/sites-enabled/
+
+# 测试配置文件语法
+sudo nginx -t
+
+# 重启Nginx
+sudo systemctl restart nginx
+
+# 设置开机自启
+sudo systemctl enable nginx
+
+# 检查域名解析
+nslookup videoguard.tech
+dig videoguard.tech
+
+# 应该返回您的服务器IP: 223.109.239.11
+
+# 测试外网访问
+curl http://videoguard.tech
+
+# 配置https
+sudo apt install certbot python3-certbot-nginx -y
+
+sudo certbot --nginx -d videoguard.tech -d www.videoguard.tech
+输入邮箱地址（用于证书到期提醒）
+同意服务条款（输入 A 同意）
+是否共享邮箱给EFF（可选，输入 Y 或 N）
+
+# 检查后端服务
+sudo systemctl status videoguard
+# 如果没运行，启动它
+sudo systemctl start videoguard
+
+# 检查前端服务
+sudo systemctl status VideoGuardFrontend
+# 如果没运行，启动它
+sudo systemctl start VideoGuardFrontend
+
+# 测试HTTP自动跳转HTTPS
+curl -I http://videoguard.tech
+
+# 测试HTTPS访问
+curl -I https://videoguard.tech
+
+# 查看Nginx错误日志
+sudo tail -f /var/log/nginx/error.log
+
+# 查看Certbot日志
+sudo tail -f /var/log/letsencrypt/letsencrypt.log
+
+# 检查端口占用
+sudo netstat -tlnp | grep :80
+sudo netstat -tlnp | grep :443
