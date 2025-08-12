@@ -124,3 +124,87 @@
 ==================================================
 2025-08-08 14:58:49 - AV114981240706975 - 成功 - 举报成功
 2025-08-08 14:58:49 - AV114981240706975 - 成功 - BVBV1kVtwz8ED5 - 举报成功
+
+2025-08-10 23:39:22 - HTTP状态码:
+200
+==================================================
+
+2025-08-10 23:39:22 - 响应头:
+{
+  "Date": "Sun, 10 Aug 2025 15:39:23 GMT",
+  "Content-Type": "application/json; charset=utf-8",
+  "Content-Length": "32",
+  "Connection": "keep-alive",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE",
+  "Access-Control-Allow-Origin": "https://www.bilibili.com",
+  "Bili-Status-Code": "0",
+  "Bili-Trace-Id": "1b817c8dde6898bd",
+  "Cpu_usage": "94",
+  "Vary": "Origin",
+  "X-Bili-Trace-Id": "299ad5d0f1aac2e01b817c8dde6898bd",
+  "X-Ticket-Status": "1",
+  "Cross-Origin-Resource-Policy": "cross-origin",
+  "Access-Control-Allow-Headers": "origin,no-cache,x-requested-with,if-modified-since,pragma,last-modified,cache-control,expires,content-type,access-control-allow-credentials,dnt,x-customheader,keep-alive,user-agent,x-cache-webcdn,x-bilibili-key-real-ip,x-backend-bili-real-ip,x-risk-header,x-event-traceid",
+  "Access-Control-Expose-Headers": "x-bili-gaia-vvoucher,x-bili-trace-id,x-bili-gaia-param, X-Cache-Webcdn",
+  "Expires": "Sun, 10 Aug 2025 15:39:22 GMT",
+  "Cache-Control": "no-cache",
+  "X-Cache-Webcdn": "BYPASS from blzone01"
+}
+==================================================
+
+2025-08-10 23:39:22 - 原始响应:
+{"code":0,"message":"0","ttl":1}
+==================================================
+
+2025-08-10 23:39:22 - JSON响应:
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1
+}
+==================================================
+2025-08-10 23:39:22 - AV280007648 - 成功 - 举报成功
+2025-08-10 23:39:22 - AV280007648 - 成功 - BVBV14c411o7Hk - 举报成功
+
+2025-08-10 23:45:01 - HTTP状态码:
+200
+==================================================
+
+2025-08-10 23:45:01 - 响应头:
+{
+  "Date": "Sun, 10 Aug 2025 15:45:01 GMT",
+  "Content-Type": "application/json; charset=utf-8",
+  "Content-Length": "32",
+  "Connection": "keep-alive",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE",
+  "Access-Control-Allow-Origin": "https://www.bilibili.com",
+  "Bili-Status-Code": "0",
+  "Bili-Trace-Id": "10e80c28126898be",
+  "Cpu_usage": "151",
+  "Vary": "Origin",
+  "X-Bili-Trace-Id": "728de2c94418f3cc10e80c28126898be",
+  "X-Ticket-Status": "1",
+  "Access-Control-Allow-Headers": "origin,no-cache,x-requested-with,if-modified-since,pragma,last-modified,cache-control,expires,content-type,access-control-allow-credentials,dnt,x-customheader,keep-alive,user-agent,x-cache-webcdn,x-bilibili-key-real-ip,x-backend-bili-real-ip,x-risk-header,x-event-traceid",
+  "Cross-Origin-Resource-Policy": "cross-origin",
+  "Access-Control-Expose-Headers": "x-bili-gaia-vvoucher,x-bili-trace-id,x-bili-gaia-param, X-Cache-Webcdn",
+  "Expires": "Sun, 10 Aug 2025 15:45:00 GMT",
+  "Cache-Control": "no-cache",
+  "X-Cache-Webcdn": "BYPASS from blzone02"
+}
+==================================================
+
+2025-08-10 23:45:01 - 原始响应:
+{"code":0,"message":"0","ttl":1}
+==================================================
+
+2025-08-10 23:45:01 - JSON响应:
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1
+}
+==================================================
+2025-08-10 23:45:01 - AV114981240706975 - 成功 - 举报成功
+2025-08-10 23:45:01 - AV114981240706975 - 成功 - BVBV1kVtwz8ED5 - 举报成功

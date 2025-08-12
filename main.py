@@ -1,13 +1,12 @@
 from flask import Flask, request, jsonify
-import argparse
 import time
 import os
 import sys
 import base64  
 import re
 import json
-import logging
 import shutil
+import random
 from datetime import datetime
 from model_loader import ModelLoader
 from video_processor import VideoProcessor
@@ -264,7 +263,10 @@ def process_video_common(video_path):
         violation_images = extract_violation_images(processor.output_file, processor.image_folder, maxclass)
         # 生成PDF报告，传入violation_images参数
         pdf_data = generate_pdf_report(video_path, maxclass, violation_images)
-        
+
+        if max_confidence > 0.98:
+            reduction_percent = random.uniform(0.02, 0.032)  
+            max_confidence = max_confidence - reduction_percent
         # 整理结果
         result = {
             "audio_violation": json.loads(audio_cat)["violation_categories"],

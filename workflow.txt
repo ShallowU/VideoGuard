@@ -1,3 +1,6 @@
+# 1.改端口包括main.py的8801端口和前端api端口
+# 2.加env文件用于举报
+223.109.239.11
 git clone https://github.com/ShallowU/VideoGuard.git
 cd VideoGuard/
 
@@ -25,8 +28,9 @@ ffmpeg -encoders | grep nvenc
 ffmpeg -hwaccels
 
 # 安装python环境
-pip install -r requirements.txt
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 pip install funasr==1.2.6
+pip install dotenv
 # 安装GPU监控工具
 pip install gpustat
 
@@ -38,19 +42,13 @@ python -m http.server 8800
 # 外网：
 
 
-# 改动main.py的8800端口和前端api端口
+# 改动main.py的8801端口和前端api8800端口
 
 
 # 检查端口使用情况
 netstat -tlnp 
 
-# Ubuntu防火墙设置（选做）
-sudo ufw allow 8800
-sudo ufw reload
-sudo ufw disable
-sudo systemctl stop iptables 2>/dev/null || true
-sudo systemctl stop firewalld 2>/dev/null || true
-
+export const API_SERVER_URL = "http://127.0.0.1:8801"; # http://223.109.239.11:13271
 
 
 
@@ -69,7 +67,7 @@ sudo systemctl restart videoguard
 
 
 # 本地测试
-curl http://localhost:8800/health
+curl http://localhost:8801/health
 
 # 公网测试
 curl http://223.109.239.11:/health
@@ -83,9 +81,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=vipuser
+User=root
+Environment=PATH=/root/.nvm/versions/node/v22.15.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 WorkingDirectory=/home/vipuser/VideoGuardFrontend
-ExecStart=/usr/local/bin/serve build -p 8801
+ExecStart=/root/.nvm/versions/node/v22.15.1/bin/serve -s build -p 8800
 Restart=always
 RestartSec=10
 
@@ -134,7 +133,7 @@ npm install -g serve
 # 或者构建生产版本
 npm run build
 # 然后服务构建后的文件
-serve -s build -p 8801
+serve -s build -p 8800
 
 ## 配置域名
 sudo apt install nginx -y
@@ -142,12 +141,12 @@ sudo apt install nginx -y
 sudo vim /etc/nginx/sites-available/videoguard.tech
 
 server {
-    listen 80;
+    listen 8802;
     server_name videoguard.tech www.videoguard.tech;
     
     # 前端React应用
     location / {
-        proxy_pass http://127.0.0.1:8801;
+        proxy_pass http://127.0.0.1:8800;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -162,7 +161,7 @@ server {
     
     # 后端API接口
     location /api/ {
-        proxy_pass http://127.0.0.1:8800/;
+        proxy_pass http://127.0.0.1:8801/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -177,7 +176,7 @@ server {
     
     # 健康检查接口
     location /health {
-        proxy_pass http://127.0.0.1:8800/health;
+        proxy_pass http://127.0.0.1:8801/health;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
@@ -202,7 +201,7 @@ dig videoguard.tech
 # 应该返回您的服务器IP: 223.109.239.11
 
 # 测试外网访问
-curl http://videoguard.tech
+curl http://kind.videoguard.tech
 
 # 配置https
 sudo apt install certbot python3-certbot-nginx -y
