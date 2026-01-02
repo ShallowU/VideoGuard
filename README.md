@@ -11,8 +11,10 @@ VideoGuard 是一个基于深度学习和多模态融合技术的智能视频内
 ![首页](https://bu.dusays.com/2025/06/14/684c5d266e24a.png)
 
 **获得奖项**：<u>全国大学生第十八届信息安全作品赛二等奖</u>
-![获奖证书](img/certificate.png)
-## 主要功能
+<br>
+<div align="center">
+  <img src="img/certificate.png" alt="获奖证书" width="50%" />
+</div>
 
 - **多模态内容检测**：支持图像、音频、文本的综合分析
 - **智能分类识别**：检测血腥、色情、暴力、吸烟、正常等内容类别
@@ -443,4 +445,5 @@ tail -f log/nsfw_detect_*.log
 ## 许可证
 
 本项目采用 MIT 许可证，详情请参阅 [LICENSE](LICENSE) 文件。
+
 不可用于商业用途或各种比赛参赛。
